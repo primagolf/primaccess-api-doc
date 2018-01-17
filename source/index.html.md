@@ -55,7 +55,7 @@ Base URLs:
 
 
 * API Key (ApiKeyAuth)
-    - Parameter Name: **X-API-Key**, in: header. 
+    - Parameter Name: **key**, in: query. 
 
 
 <h1 id="Primaccess-API-Accounts">Accounts</h1>
@@ -214,7 +214,7 @@ Returns a list of accounts you’ve previously created.
 
 |Parameter|In|Type|Required|Description|
 |---|---|---|---|---|
-|reference|query|string|false|The own account reference in your application|
+|reference|query|string|false|A reference for your application|
 |last_name|query|string|false|The account's last name|
 |first_name|query|string|false|The account's first name|
 |email|query|string|false|The account's email address|
@@ -233,6 +233,12 @@ Returns a list of accounts you’ve previously created.
   "limit": 20
 }
 ```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
 
 
 <h3 id="searchAccounts-responses">Responses</h3>
@@ -241,6 +247,7 @@ Returns a list of accounts you’ve previously created.
 |Status|Meaning|Description|Schema|
 |---|---|---|---|
 |200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|A list of account objects|Inline|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|The API key is missing or invalid.|[Error](#schemaerror)|
 
 
 <aside class="warning">
@@ -310,7 +317,9 @@ const inputBody = '{
   "first_name": "John",
   "email": "john.doe@gmail.com",
   "phone": "0601020304",
-  "is_superuser": false
+  "is_superuser": false,
+  "group": "c8e3bdac-f7a3-11e7-bf64-42010a8401cd",
+  "golf": "cfaa9264-f7a3-11e7-bf64-42010a8401cd"
 }';
 const headers = {
   'Content-Type':'application/json',
@@ -416,7 +425,9 @@ Creates a new account.
   "first_name": "John",
   "email": "john.doe@gmail.com",
   "phone": "0601020304",
-  "is_superuser": false
+  "is_superuser": false,
+  "group": "c8e3bdac-f7a3-11e7-bf64-42010a8401cd",
+  "golf": "cfaa9264-f7a3-11e7-bf64-42010a8401cd"
 }
 ```
 
@@ -441,8 +452,28 @@ Creates a new account.
   "email": "john.doe@gmail.com",
   "phone": "0601020304",
   "is_superuser": false,
+  "group": "c8e3bdac-f7a3-11e7-bf64-42010a8401cd",
+  "golf": "cfaa9264-f7a3-11e7-bf64-42010a8401cd",
   "created_at": "2017-02-12T15:19:21+01:00",
   "updated_at": "2017-02-12T15:19:21-02:00"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
 }
 ```
 
@@ -453,6 +484,9 @@ Creates a new account.
 |Status|Meaning|Description|Schema|
 |---|---|---|---|
 |201|[Created](https://tools.ietf.org/html/rfc7231#section-6.3.2)|An account object|Inline|
+|400|[Bad Request](https://tools.ietf.org/html/rfc7231#section-6.5.1)|The request parameters are invalid.|[Error](#schemaerror)|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|The API key is missing or invalid.|[Error](#schemaerror)|
+|500|[Internal Server Error](https://tools.ietf.org/html/rfc7231#section-6.6.1)|The request raised an internal exception.|[Error](#schemaerror)|
 
 
 <aside class="warning">
@@ -614,7 +648,7 @@ Get info about an account.
 
 |Parameter|In|Type|Required|Description|
 |---|---|---|---|---|
-|account_id|path|string|true|Unique identifier for the account|
+|account_id|path|string(uuid)|true|Unique identifier for the account|
 
 
 > Example responses
@@ -629,8 +663,16 @@ Get info about an account.
   "email": "john.doe@gmail.com",
   "phone": "0601020304",
   "is_superuser": false,
+  "group": "c8e3bdac-f7a3-11e7-bf64-42010a8401cd",
+  "golf": "cfaa9264-f7a3-11e7-bf64-42010a8401cd",
   "created_at": "2017-02-12T15:19:21+01:00",
   "updated_at": "2017-02-12T15:19:21-02:00"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
 }
 ```
 ```json
@@ -647,6 +689,7 @@ Get info about an account.
 |Status|Meaning|Description|Schema|
 |---|---|---|---|
 |200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|An account object|Inline|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|The API key is missing or invalid.|[Error](#schemaerror)|
 |404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|The specified resource was not found.|[Error](#schemaerror)|
 
 
@@ -667,7 +710,8 @@ ApiKeyAuth
 
 ```shell
 # You can also use wget
-curl -X PUT https://primaccess-179015.appspot.com//accounts/{account_id}
+curl -X PUT https://primaccess-179015.appspot.com//accounts/{account_id} \
+  -H 'Accept: application/json'
 
 
 ```
@@ -678,10 +722,18 @@ PUT https://primaccess-179015.appspot.com//accounts/{account_id} HTTP/1.1
 Host: primaccess-179015.appspot.com
 
 
+Accept: application/json
+
+
 ```
 
 
 ```javascript
+var headers = {
+  'Accept':'application/json'
+
+
+};
 
 
 $.ajax({
@@ -689,6 +741,7 @@ $.ajax({
   method: 'put',
 
 
+  headers: headers,
   success: function(data) {
     console.log(JSON.stringify(data));
   }
@@ -702,11 +755,19 @@ $.ajax({
 const request = require('node-fetch');
 
 
+const headers = {
+  'Accept':'application/json'
+
+
+};
+
+
 fetch('https://primaccess-179015.appspot.com//accounts/{account_id}',
 {
-  method: 'PUT'
+  method: 'PUT',
 
 
+  headers: headers
 })
 .then(function(res) {
     return res.json();
@@ -723,9 +784,14 @@ require 'rest-client'
 require 'json'
 
 
+headers = {
+  'Accept' => 'application/json'
+}
+
+
 result = RestClient.put 'https://primaccess-179015.appspot.com//accounts/{account_id}',
   params: {
-  }
+  }, headers: headers
 
 
 p JSON.parse(result)
@@ -736,12 +802,15 @@ p JSON.parse(result)
 
 ```python
 import requests
+headers = {
+  'Accept': 'application/json'
+}
 
 
 r = requests.put('https://primaccess-179015.appspot.com//accounts/{account_id}', params={
 
 
-)
+}, headers = headers)
 
 
 print r.json()
@@ -783,7 +852,51 @@ Updates an existing account.
 
 |Parameter|In|Type|Required|Description|
 |---|---|---|---|---|
-|account_id|path|string|true|Unique identifier for the account|
+|account_id|path|string(uuid)|true|Unique identifier for the account|
+
+
+> Example responses
+
+
+```json
+{
+  "id": "902357bd-c9ec-11e7-ad91-00155d011408",
+  "reference": "AAAA-BBBB",
+  "last_name": "Doe",
+  "first_name": "John",
+  "email": "john.doe@gmail.com",
+  "phone": "0601020304",
+  "is_superuser": false,
+  "group": "c8e3bdac-f7a3-11e7-bf64-42010a8401cd",
+  "golf": "cfaa9264-f7a3-11e7-bf64-42010a8401cd",
+  "created_at": "2017-02-12T15:19:21+01:00",
+  "updated_at": "2017-02-12T15:19:21-02:00"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
 
 
 <h3 id="updateAccount-responses">Responses</h3>
@@ -791,7 +904,11 @@ Updates an existing account.
 
 |Status|Meaning|Description|Schema|
 |---|---|---|---|
-|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|An account object|None|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|An account object|Inline|
+|400|[Bad Request](https://tools.ietf.org/html/rfc7231#section-6.5.1)|The request parameters are invalid.|[Error](#schemaerror)|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|The API key is missing or invalid.|[Error](#schemaerror)|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|The specified resource was not found.|[Error](#schemaerror)|
+|500|[Internal Server Error](https://tools.ietf.org/html/rfc7231#section-6.6.1)|The request raised an internal exception.|[Error](#schemaerror)|
 
 
 <aside class="warning">
@@ -811,7 +928,8 @@ ApiKeyAuth
 
 ```shell
 # You can also use wget
-curl -X DELETE https://primaccess-179015.appspot.com//accounts/{account_id}
+curl -X DELETE https://primaccess-179015.appspot.com//accounts/{account_id} \
+  -H 'Accept: application/json'
 
 
 ```
@@ -822,10 +940,18 @@ DELETE https://primaccess-179015.appspot.com//accounts/{account_id} HTTP/1.1
 Host: primaccess-179015.appspot.com
 
 
+Accept: application/json
+
+
 ```
 
 
 ```javascript
+var headers = {
+  'Accept':'application/json'
+
+
+};
 
 
 $.ajax({
@@ -833,6 +959,7 @@ $.ajax({
   method: 'delete',
 
 
+  headers: headers,
   success: function(data) {
     console.log(JSON.stringify(data));
   }
@@ -846,11 +973,19 @@ $.ajax({
 const request = require('node-fetch');
 
 
+const headers = {
+  'Accept':'application/json'
+
+
+};
+
+
 fetch('https://primaccess-179015.appspot.com//accounts/{account_id}',
 {
-  method: 'DELETE'
+  method: 'DELETE',
 
 
+  headers: headers
 })
 .then(function(res) {
     return res.json();
@@ -867,9 +1002,14 @@ require 'rest-client'
 require 'json'
 
 
+headers = {
+  'Accept' => 'application/json'
+}
+
+
 result = RestClient.delete 'https://primaccess-179015.appspot.com//accounts/{account_id}',
   params: {
-  }
+  }, headers: headers
 
 
 p JSON.parse(result)
@@ -880,12 +1020,15 @@ p JSON.parse(result)
 
 ```python
 import requests
+headers = {
+  'Accept': 'application/json'
+}
 
 
 r = requests.delete('https://primaccess-179015.appspot.com//accounts/{account_id}', params={
 
 
-)
+}, headers = headers)
 
 
 print r.json()
@@ -927,7 +1070,36 @@ Removes an existing account.
 
 |Parameter|In|Type|Required|Description|
 |---|---|---|---|---|
-|account_id|path|string|true|Unique identifier for the account|
+|account_id|path|string(uuid)|true|Unique identifier for the account|
+
+
+> Example responses
+
+
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
 
 
 <h3 id="removeAccount-responses">Responses</h3>
@@ -936,6 +1108,10 @@ Removes an existing account.
 |Status|Meaning|Description|Schema|
 |---|---|---|---|
 |204|[No Content](https://tools.ietf.org/html/rfc7231#section-6.3.5)|No content - Account deleted successfully|None|
+|400|[Bad Request](https://tools.ietf.org/html/rfc7231#section-6.5.1)|The request parameters are invalid.|[Error](#schemaerror)|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|The API key is missing or invalid.|[Error](#schemaerror)|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|The specified resource was not found.|[Error](#schemaerror)|
+|500|[Internal Server Error](https://tools.ietf.org/html/rfc7231#section-6.6.1)|The request raised an internal exception.|[Error](#schemaerror)|
 
 
 <aside class="warning">
@@ -955,7 +1131,8 @@ ApiKeyAuth
 
 ```shell
 # You can also use wget
-curl -X GET https://primaccess-179015.appspot.com//accounts/{account_id}/cards
+curl -X GET https://primaccess-179015.appspot.com//accounts/{account_id}/cards \
+  -H 'Accept: application/json'
 
 
 ```
@@ -966,10 +1143,18 @@ GET https://primaccess-179015.appspot.com//accounts/{account_id}/cards HTTP/1.1
 Host: primaccess-179015.appspot.com
 
 
+Accept: application/json
+
+
 ```
 
 
 ```javascript
+var headers = {
+  'Accept':'application/json'
+
+
+};
 
 
 $.ajax({
@@ -977,6 +1162,7 @@ $.ajax({
   method: 'get',
 
 
+  headers: headers,
   success: function(data) {
     console.log(JSON.stringify(data));
   }
@@ -990,11 +1176,19 @@ $.ajax({
 const request = require('node-fetch');
 
 
+const headers = {
+  'Accept':'application/json'
+
+
+};
+
+
 fetch('https://primaccess-179015.appspot.com//accounts/{account_id}/cards',
 {
-  method: 'GET'
+  method: 'GET',
 
 
+  headers: headers
 })
 .then(function(res) {
     return res.json();
@@ -1011,9 +1205,14 @@ require 'rest-client'
 require 'json'
 
 
+headers = {
+  'Accept' => 'application/json'
+}
+
+
 result = RestClient.get 'https://primaccess-179015.appspot.com//accounts/{account_id}/cards',
   params: {
-  }
+  }, headers: headers
 
 
 p JSON.parse(result)
@@ -1024,12 +1223,15 @@ p JSON.parse(result)
 
 ```python
 import requests
+headers = {
+  'Accept': 'application/json'
+}
 
 
 r = requests.get('https://primaccess-179015.appspot.com//accounts/{account_id}/cards', params={
 
 
-)
+}, headers = headers)
 
 
 print r.json()
@@ -1071,7 +1273,40 @@ Gets all cards of an account.
 
 |Parameter|In|Type|Required|Description|
 |---|---|---|---|---|
-|account_id|path|string|true|Unique identifier for the account|
+|account_id|path|string(uuid)|true|Unique identifier for the account|
+|id|query|string|false|Card id|
+|sort|query|string|false|List of fields for sorting, seperated by comma|
+|range|query|string|false|The range of items to return (start-end)|
+
+
+> Example responses
+
+
+```json
+{
+  "total": 100,
+  "offset": 0,
+  "limit": 20
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
 
 
 <h3 id="getAccountCards-responses">Responses</h3>
@@ -1079,7 +1314,10 @@ Gets all cards of an account.
 
 |Status|Meaning|Description|Schema|
 |---|---|---|---|
-|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|A list of card objects|None|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|A list of card objects|Inline|
+|400|[Bad Request](https://tools.ietf.org/html/rfc7231#section-6.5.1)|The request parameters are invalid.|[Error](#schemaerror)|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|The API key is missing or invalid.|[Error](#schemaerror)|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|The specified resource was not found.|[Error](#schemaerror)|
 
 
 <aside class="warning">
@@ -1099,7 +1337,8 @@ ApiKeyAuth
 
 ```shell
 # You can also use wget
-curl -X GET https://primaccess-179015.appspot.com//accounts/{account_id}/wallets
+curl -X GET https://primaccess-179015.appspot.com//accounts/{account_id}/wallets \
+  -H 'Accept: application/json'
 
 
 ```
@@ -1110,10 +1349,18 @@ GET https://primaccess-179015.appspot.com//accounts/{account_id}/wallets HTTP/1.
 Host: primaccess-179015.appspot.com
 
 
+Accept: application/json
+
+
 ```
 
 
 ```javascript
+var headers = {
+  'Accept':'application/json'
+
+
+};
 
 
 $.ajax({
@@ -1121,6 +1368,7 @@ $.ajax({
   method: 'get',
 
 
+  headers: headers,
   success: function(data) {
     console.log(JSON.stringify(data));
   }
@@ -1134,11 +1382,19 @@ $.ajax({
 const request = require('node-fetch');
 
 
+const headers = {
+  'Accept':'application/json'
+
+
+};
+
+
 fetch('https://primaccess-179015.appspot.com//accounts/{account_id}/wallets',
 {
-  method: 'GET'
+  method: 'GET',
 
 
+  headers: headers
 })
 .then(function(res) {
     return res.json();
@@ -1155,9 +1411,14 @@ require 'rest-client'
 require 'json'
 
 
+headers = {
+  'Accept' => 'application/json'
+}
+
+
 result = RestClient.get 'https://primaccess-179015.appspot.com//accounts/{account_id}/wallets',
   params: {
-  }
+  }, headers: headers
 
 
 p JSON.parse(result)
@@ -1168,12 +1429,15 @@ p JSON.parse(result)
 
 ```python
 import requests
+headers = {
+  'Accept': 'application/json'
+}
 
 
 r = requests.get('https://primaccess-179015.appspot.com//accounts/{account_id}/wallets', params={
 
 
-)
+}, headers = headers)
 
 
 print r.json()
@@ -1215,7 +1479,41 @@ Gets all wallets of an account.
 
 |Parameter|In|Type|Required|Description|
 |---|---|---|---|---|
-|account_id|path|string|true|Unique identifier for the account|
+|account_id|path|string(uuid)|true|Unique identifier for the account|
+|id|query|string(uuid)|false|Wallet id|
+|name|query|string|false|Wallet name|
+|sort|query|string|false|List of fields for sorting, seperated by comma|
+|range|query|string|false|The range of items to return (start-end)|
+
+
+> Example responses
+
+
+```json
+{
+  "total": 100,
+  "offset": 0,
+  "limit": 20
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
 
 
 <h3 id="getAccountWallets-responses">Responses</h3>
@@ -1223,7 +1521,10 @@ Gets all wallets of an account.
 
 |Status|Meaning|Description|Schema|
 |---|---|---|---|
-|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|A list of wallet objects|None|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|A list of wallet objects|Inline|
+|400|[Bad Request](https://tools.ietf.org/html/rfc7231#section-6.5.1)|The request parameters are invalid.|[Error](#schemaerror)|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|The API key is missing or invalid.|[Error](#schemaerror)|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|The specified resource was not found.|[Error](#schemaerror)|
 
 
 <aside class="warning">
@@ -1243,7 +1544,8 @@ ApiKeyAuth
 
 ```shell
 # You can also use wget
-curl -X GET https://primaccess-179015.appspot.com//accounts/{account_id}/transactions
+curl -X GET https://primaccess-179015.appspot.com//accounts/{account_id}/transactions \
+  -H 'Accept: application/json'
 
 
 ```
@@ -1254,10 +1556,18 @@ GET https://primaccess-179015.appspot.com//accounts/{account_id}/transactions HT
 Host: primaccess-179015.appspot.com
 
 
+Accept: application/json
+
+
 ```
 
 
 ```javascript
+var headers = {
+  'Accept':'application/json'
+
+
+};
 
 
 $.ajax({
@@ -1265,6 +1575,7 @@ $.ajax({
   method: 'get',
 
 
+  headers: headers,
   success: function(data) {
     console.log(JSON.stringify(data));
   }
@@ -1278,11 +1589,19 @@ $.ajax({
 const request = require('node-fetch');
 
 
+const headers = {
+  'Accept':'application/json'
+
+
+};
+
+
 fetch('https://primaccess-179015.appspot.com//accounts/{account_id}/transactions',
 {
-  method: 'GET'
+  method: 'GET',
 
 
+  headers: headers
 })
 .then(function(res) {
     return res.json();
@@ -1299,9 +1618,14 @@ require 'rest-client'
 require 'json'
 
 
+headers = {
+  'Accept' => 'application/json'
+}
+
+
 result = RestClient.get 'https://primaccess-179015.appspot.com//accounts/{account_id}/transactions',
   params: {
-  }
+  }, headers: headers
 
 
 p JSON.parse(result)
@@ -1312,12 +1636,15 @@ p JSON.parse(result)
 
 ```python
 import requests
+headers = {
+  'Accept': 'application/json'
+}
 
 
 r = requests.get('https://primaccess-179015.appspot.com//accounts/{account_id}/transactions', params={
 
 
-)
+}, headers = headers)
 
 
 print r.json()
@@ -1359,7 +1686,43 @@ Gets all transactions of an account.
 
 |Parameter|In|Type|Required|Description|
 |---|---|---|---|---|
-|account_id|path|string|true|Unique identifier for the account|
+|account_id|path|string(uuid)|true|Unique identifier for the account|
+|id|query|string(uuid)|false|Transaction id|
+|reference|query|string|false|Transaction reference|
+|wallet_id|query|string(uuid)|false|Wallet id|
+|transaction_type_id|query|string(uuid)|false|Transaction Type id|
+|sort|query|string|false|List of fields for sorting, seperated by comma|
+|range|query|string|false|The range of items to return (start-end)|
+
+
+> Example responses
+
+
+```json
+{
+  "total": 100,
+  "offset": 0,
+  "limit": 20
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
 
 
 <h3 id="getAccountTransactions-responses">Responses</h3>
@@ -1367,7 +1730,10 @@ Gets all transactions of an account.
 
 |Status|Meaning|Description|Schema|
 |---|---|---|---|
-|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|A list of transaction objects|None|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|A list of transaction objects|Inline|
+|400|[Bad Request](https://tools.ietf.org/html/rfc7231#section-6.5.1)|The request parameters are invalid.|[Error](#schemaerror)|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|The API key is missing or invalid.|[Error](#schemaerror)|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|The specified resource was not found.|[Error](#schemaerror)|
 
 
 <aside class="warning">
@@ -1387,7 +1753,8 @@ ApiKeyAuth
 
 ```shell
 # You can also use wget
-curl -X GET https://primaccess-179015.appspot.com//accounts/{account_id}/moves
+curl -X GET https://primaccess-179015.appspot.com//accounts/{account_id}/moves \
+  -H 'Accept: application/json'
 
 
 ```
@@ -1398,10 +1765,18 @@ GET https://primaccess-179015.appspot.com//accounts/{account_id}/moves HTTP/1.1
 Host: primaccess-179015.appspot.com
 
 
+Accept: application/json
+
+
 ```
 
 
 ```javascript
+var headers = {
+  'Accept':'application/json'
+
+
+};
 
 
 $.ajax({
@@ -1409,6 +1784,7 @@ $.ajax({
   method: 'get',
 
 
+  headers: headers,
   success: function(data) {
     console.log(JSON.stringify(data));
   }
@@ -1422,11 +1798,19 @@ $.ajax({
 const request = require('node-fetch');
 
 
+const headers = {
+  'Accept':'application/json'
+
+
+};
+
+
 fetch('https://primaccess-179015.appspot.com//accounts/{account_id}/moves',
 {
-  method: 'GET'
+  method: 'GET',
 
 
+  headers: headers
 })
 .then(function(res) {
     return res.json();
@@ -1443,9 +1827,14 @@ require 'rest-client'
 require 'json'
 
 
+headers = {
+  'Accept' => 'application/json'
+}
+
+
 result = RestClient.get 'https://primaccess-179015.appspot.com//accounts/{account_id}/moves',
   params: {
-  }
+  }, headers: headers
 
 
 p JSON.parse(result)
@@ -1456,12 +1845,15 @@ p JSON.parse(result)
 
 ```python
 import requests
+headers = {
+  'Accept': 'application/json'
+}
 
 
 r = requests.get('https://primaccess-179015.appspot.com//accounts/{account_id}/moves', params={
 
 
-)
+}, headers = headers)
 
 
 print r.json()
@@ -1503,7 +1895,41 @@ Gets all moves of an account.
 
 |Parameter|In|Type|Required|Description|
 |---|---|---|---|---|
-|account_id|path|string|true|Unique identifier for the account|
+|account_id|path|string(uuid)|true|Unique identifier for the account|
+|id|query|string|false|Move id|
+|endpoint_id|query|string(uuid)|false|Endpoint id|
+|golf_id|query|string(uuid)|false|Golf id|
+|card_id|query|string|false|Card id|
+
+
+> Example responses
+
+
+```json
+{
+  "total": 100,
+  "offset": 0,
+  "limit": 20
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
 
 
 <h3 id="getAccountMoves-responses">Responses</h3>
@@ -1511,7 +1937,10 @@ Gets all moves of an account.
 
 |Status|Meaning|Description|Schema|
 |---|---|---|---|
-|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|A list of move objects|None|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|A list of move objects|Inline|
+|400|[Bad Request](https://tools.ietf.org/html/rfc7231#section-6.5.1)|The request parameters are invalid.|[Error](#schemaerror)|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|The API key is missing or invalid.|[Error](#schemaerror)|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|The specified resource was not found.|[Error](#schemaerror)|
 
 
 <aside class="warning">
@@ -1708,6 +2137,24 @@ Creates a new wallet.
   "updated_at": "2017-02-12T15:19:21-02:00"
 }
 ```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
 
 
 <h3 id="createWallet-responses">Responses</h3>
@@ -1716,6 +2163,9 @@ Creates a new wallet.
 |Status|Meaning|Description|Schema|
 |---|---|---|---|
 |201|[Created](https://tools.ietf.org/html/rfc7231#section-6.3.2)|A wallet objet|Inline|
+|400|[Bad Request](https://tools.ietf.org/html/rfc7231#section-6.5.1)|The request parameters are invalid.|[Error](#schemaerror)|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|The API key is missing or invalid.|[Error](#schemaerror)|
+|500|[Internal Server Error](https://tools.ietf.org/html/rfc7231#section-6.6.1)|The request raised an internal exception.|[Error](#schemaerror)|
 
 
 <aside class="warning">
@@ -1877,7 +2327,7 @@ Gets info about a wallet.
 
 |Parameter|In|Type|Required|Description|
 |---|---|---|---|---|
-|wallet_id|path|string|true|Unique identifier for the wallet|
+|wallet_id|path|string(uuid)|true|Unique identifier for the wallet|
 
 
 > Example responses
@@ -1893,6 +2343,18 @@ Gets info about a wallet.
   "updated_at": "2017-02-12T15:19:21-02:00"
 }
 ```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
 
 
 <h3 id="getWallet-responses">Responses</h3>
@@ -1901,6 +2363,8 @@ Gets info about a wallet.
 |Status|Meaning|Description|Schema|
 |---|---|---|---|
 |200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|A wallet object|Inline|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|The API key is missing or invalid.|[Error](#schemaerror)|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|The specified resource was not found.|[Error](#schemaerror)|
 
 
 <aside class="warning">
@@ -1920,7 +2384,9 @@ ApiKeyAuth
 
 ```shell
 # You can also use wget
-curl -X PUT https://primaccess-179015.appspot.com//wallets/{wallet_id}
+curl -X PUT https://primaccess-179015.appspot.com//wallets/{wallet_id} \
+  -H 'Content-Type: application/json' \
+  -H 'Accept: application/json'
 
 
 ```
@@ -1929,12 +2395,20 @@ curl -X PUT https://primaccess-179015.appspot.com//wallets/{wallet_id}
 ```http
 PUT https://primaccess-179015.appspot.com//wallets/{wallet_id} HTTP/1.1
 Host: primaccess-179015.appspot.com
+Content-Type: application/json
+Accept: application/json
 
 
 ```
 
 
 ```javascript
+var headers = {
+  'Content-Type':'application/json',
+  'Accept':'application/json'
+
+
+};
 
 
 $.ajax({
@@ -1942,6 +2416,7 @@ $.ajax({
   method: 'put',
 
 
+  headers: headers,
   success: function(data) {
     console.log(JSON.stringify(data));
   }
@@ -1953,13 +2428,23 @@ $.ajax({
 
 ```javascript--nodejs
 const request = require('node-fetch');
+const inputBody = '{
+  "name": "Golf store",
+  "practice_availability": true
+}';
+const headers = {
+  'Content-Type':'application/json',
+  'Accept':'application/json'
+
+
+};
 
 
 fetch('https://primaccess-179015.appspot.com//wallets/{wallet_id}',
 {
-  method: 'PUT'
-
-
+  method: 'PUT',
+  body: inputBody,
+  headers: headers
 })
 .then(function(res) {
     return res.json();
@@ -1976,9 +2461,15 @@ require 'rest-client'
 require 'json'
 
 
+headers = {
+  'Content-Type' => 'application/json',
+  'Accept' => 'application/json'
+}
+
+
 result = RestClient.put 'https://primaccess-179015.appspot.com//wallets/{wallet_id}',
   params: {
-  }
+  }, headers: headers
 
 
 p JSON.parse(result)
@@ -1989,12 +2480,16 @@ p JSON.parse(result)
 
 ```python
 import requests
+headers = {
+  'Content-Type': 'application/json',
+  'Accept': 'application/json'
+}
 
 
 r = requests.put('https://primaccess-179015.appspot.com//wallets/{wallet_id}', params={
 
 
-)
+}, headers = headers)
 
 
 print r.json()
@@ -2031,12 +2526,63 @@ System.out.println(response.toString());
 Updates an existing wallet.
 
 
+> Body parameter
+
+
+```json
+{
+  "name": "Golf store",
+  "practice_availability": true
+}
+```
+
+
 <h3 id="updateWallet-parameters">Parameters</h3>
 
 
 |Parameter|In|Type|Required|Description|
 |---|---|---|---|---|
-|wallet_id|path|string|true|Unique identifier for the wallet|
+|wallet_id|path|string(uuid)|true|Unique identifier for the wallet|
+|body|body|[Wallet](#schemawallet)|true|A partial wallet object|
+
+
+> Example responses
+
+
+```json
+{
+  "id": "902357bd-c9ec-11e7-ad91-00155d011408",
+  "name": "Golf store",
+  "practice_availability": true,
+  "balance": 10.5,
+  "created_at": "2017-02-12T15:19:21+01:00",
+  "updated_at": "2017-02-12T15:19:21-02:00"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
 
 
 <h3 id="updateWallet-responses">Responses</h3>
@@ -2044,7 +2590,11 @@ Updates an existing wallet.
 
 |Status|Meaning|Description|Schema|
 |---|---|---|---|
-|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|A wallet object|None|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|A wallet object|Inline|
+|400|[Bad Request](https://tools.ietf.org/html/rfc7231#section-6.5.1)|The request parameters are invalid.|[Error](#schemaerror)|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|The API key is missing or invalid.|[Error](#schemaerror)|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|The specified resource was not found.|[Error](#schemaerror)|
+|500|[Internal Server Error](https://tools.ietf.org/html/rfc7231#section-6.6.1)|The request raised an internal exception.|[Error](#schemaerror)|
 
 
 <aside class="warning">
@@ -2064,7 +2614,8 @@ ApiKeyAuth
 
 ```shell
 # You can also use wget
-curl -X DELETE https://primaccess-179015.appspot.com//wallets/{wallet_id}
+curl -X DELETE https://primaccess-179015.appspot.com//wallets/{wallet_id} \
+  -H 'Accept: application/json'
 
 
 ```
@@ -2075,10 +2626,18 @@ DELETE https://primaccess-179015.appspot.com//wallets/{wallet_id} HTTP/1.1
 Host: primaccess-179015.appspot.com
 
 
+Accept: application/json
+
+
 ```
 
 
 ```javascript
+var headers = {
+  'Accept':'application/json'
+
+
+};
 
 
 $.ajax({
@@ -2086,6 +2645,7 @@ $.ajax({
   method: 'delete',
 
 
+  headers: headers,
   success: function(data) {
     console.log(JSON.stringify(data));
   }
@@ -2099,11 +2659,19 @@ $.ajax({
 const request = require('node-fetch');
 
 
+const headers = {
+  'Accept':'application/json'
+
+
+};
+
+
 fetch('https://primaccess-179015.appspot.com//wallets/{wallet_id}',
 {
-  method: 'DELETE'
+  method: 'DELETE',
 
 
+  headers: headers
 })
 .then(function(res) {
     return res.json();
@@ -2120,9 +2688,14 @@ require 'rest-client'
 require 'json'
 
 
+headers = {
+  'Accept' => 'application/json'
+}
+
+
 result = RestClient.delete 'https://primaccess-179015.appspot.com//wallets/{wallet_id}',
   params: {
-  }
+  }, headers: headers
 
 
 p JSON.parse(result)
@@ -2133,12 +2706,15 @@ p JSON.parse(result)
 
 ```python
 import requests
+headers = {
+  'Accept': 'application/json'
+}
 
 
 r = requests.delete('https://primaccess-179015.appspot.com//wallets/{wallet_id}', params={
 
 
-)
+}, headers = headers)
 
 
 print r.json()
@@ -2173,6 +2749,8 @@ System.out.println(response.toString());
 
 
 Removes an existing wallet.
+There should not be any account attached to the wallet.
+If there is still accounts attached to the wallet, an error is raised.
 
 
 <h3 id="removeWallet-parameters">Parameters</h3>
@@ -2180,7 +2758,30 @@ Removes an existing wallet.
 
 |Parameter|In|Type|Required|Description|
 |---|---|---|---|---|
-|wallet_id|path|string|true|Unique identifier for the wallet|
+|wallet_id|path|string(uuid)|true|Unique identifier for the wallet|
+
+
+> Example responses
+
+
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
 
 
 <h3 id="removeWallet-responses">Responses</h3>
@@ -2189,6 +2790,9 @@ Removes an existing wallet.
 |Status|Meaning|Description|Schema|
 |---|---|---|---|
 |204|[No Content](https://tools.ietf.org/html/rfc7231#section-6.3.5)|No content - Wallet deleted successfully|None|
+|400|[Bad Request](https://tools.ietf.org/html/rfc7231#section-6.5.1)|The request parameters are invalid.|[Error](#schemaerror)|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|The API key is missing or invalid.|[Error](#schemaerror)|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|The specified resource was not found.|[Error](#schemaerror)|
 
 
 <aside class="warning">
@@ -2208,7 +2812,8 @@ ApiKeyAuth
 
 ```shell
 # You can also use wget
-curl -X GET https://primaccess-179015.appspot.com//wallets/{wallet_id}/accounts
+curl -X GET https://primaccess-179015.appspot.com//wallets/{wallet_id}/accounts \
+  -H 'Accept: application/json'
 
 
 ```
@@ -2219,10 +2824,18 @@ GET https://primaccess-179015.appspot.com//wallets/{wallet_id}/accounts HTTP/1.1
 Host: primaccess-179015.appspot.com
 
 
+Accept: application/json
+
+
 ```
 
 
 ```javascript
+var headers = {
+  'Accept':'application/json'
+
+
+};
 
 
 $.ajax({
@@ -2230,6 +2843,7 @@ $.ajax({
   method: 'get',
 
 
+  headers: headers,
   success: function(data) {
     console.log(JSON.stringify(data));
   }
@@ -2243,11 +2857,19 @@ $.ajax({
 const request = require('node-fetch');
 
 
+const headers = {
+  'Accept':'application/json'
+
+
+};
+
+
 fetch('https://primaccess-179015.appspot.com//wallets/{wallet_id}/accounts',
 {
-  method: 'GET'
+  method: 'GET',
 
 
+  headers: headers
 })
 .then(function(res) {
     return res.json();
@@ -2264,9 +2886,14 @@ require 'rest-client'
 require 'json'
 
 
+headers = {
+  'Accept' => 'application/json'
+}
+
+
 result = RestClient.get 'https://primaccess-179015.appspot.com//wallets/{wallet_id}/accounts',
   params: {
-  }
+  }, headers: headers
 
 
 p JSON.parse(result)
@@ -2277,12 +2904,15 @@ p JSON.parse(result)
 
 ```python
 import requests
+headers = {
+  'Accept': 'application/json'
+}
 
 
 r = requests.get('https://primaccess-179015.appspot.com//wallets/{wallet_id}/accounts', params={
 
 
-)
+}, headers = headers)
 
 
 print r.json()
@@ -2324,7 +2954,42 @@ Get all accounts on a wallet.
 
 |Parameter|In|Type|Required|Description|
 |---|---|---|---|---|
-|wallet_id|path|string|true|Unique identifier for the wallet|
+|wallet_id|path|string(uuid)|true|Unique identifier for the wallet|
+|reference|query|string|false|Account reference|
+|last_name|query|string|false|Account last name|
+|first_name|query|string|false|Account first name|
+|email|query|string|false|Account email|
+|phone|query|string|false|Account phone number|
+
+
+> Example responses
+
+
+```json
+{
+  "total": 100,
+  "offset": 0,
+  "limit": 20
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
 
 
 <h3 id="getWalletAccounts-responses">Responses</h3>
@@ -2332,151 +2997,10 @@ Get all accounts on a wallet.
 
 |Status|Meaning|Description|Schema|
 |---|---|---|---|
-|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|A list of account objects|None|
-
-
-<aside class="warning">
-To perform this operation, you must be authenticated by means of one of the following methods:
-ApiKeyAuth
-</aside>
-
-
-## getTransactionsByWalletId
-
-
-<a id="opIdgetTransactionsByWalletId"></a>
-
-
-> Code samples
-
-
-```shell
-# You can also use wget
-curl -X GET https://primaccess-179015.appspot.com//wallets/{wallet_id}/transactions
-
-
-```
-
-
-```http
-GET https://primaccess-179015.appspot.com//wallets/{wallet_id}/transactions HTTP/1.1
-Host: primaccess-179015.appspot.com
-
-
-```
-
-
-```javascript
-
-
-$.ajax({
-  url: 'https://primaccess-179015.appspot.com//wallets/{wallet_id}/transactions',
-  method: 'get',
-
-
-  success: function(data) {
-    console.log(JSON.stringify(data));
-  }
-})
-
-
-```
-
-
-```javascript--nodejs
-const request = require('node-fetch');
-
-
-fetch('https://primaccess-179015.appspot.com//wallets/{wallet_id}/transactions',
-{
-  method: 'GET'
-
-
-})
-.then(function(res) {
-    return res.json();
-}).then(function(body) {
-    console.log(body);
-});
-
-
-```
-
-
-```ruby
-require 'rest-client'
-require 'json'
-
-
-result = RestClient.get 'https://primaccess-179015.appspot.com//wallets/{wallet_id}/transactions',
-  params: {
-  }
-
-
-p JSON.parse(result)
-
-
-```
-
-
-```python
-import requests
-
-
-r = requests.get('https://primaccess-179015.appspot.com//wallets/{wallet_id}/transactions', params={
-
-
-)
-
-
-print r.json()
-
-
-```
-
-
-```java
-URL obj = new URL("https://primaccess-179015.appspot.com//wallets/{wallet_id}/transactions");
-HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-con.setRequestMethod("GET");
-int responseCode = con.getResponseCode();
-BufferedReader in = new BufferedReader(
-    new InputStreamReader(con.getInputStream()));
-String inputLine;
-StringBuffer response = new StringBuffer();
-while ((inputLine = in.readLine()) != null) {
-    response.append(inputLine);
-}
-in.close();
-System.out.println(response.toString());
-
-
-```
-
-
-`GET /wallets/{wallet_id}/transactions`
-
-
-*Get all transactions*
-
-
-Gets all transactions of a wallet.
-
-
-<h3 id="getTransactionsByWalletId-parameters">Parameters</h3>
-
-
-|Parameter|In|Type|Required|Description|
-|---|---|---|---|---|
-|wallet_id|path|string|true|Unique identifier for the wallet|
-
-
-<h3 id="getTransactionsByWalletId-responses">Responses</h3>
-
-
-|Status|Meaning|Description|Schema|
-|---|---|---|---|
-|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|A list of transaction objects|None|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|A list of account objects|Inline|
+|400|[Bad Request](https://tools.ietf.org/html/rfc7231#section-6.5.1)|The request parameters are invalid.|[Error](#schemaerror)|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|The API key is missing or invalid.|[Error](#schemaerror)|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|The specified resource was not found.|[Error](#schemaerror)|
 
 
 <aside class="warning">
@@ -2496,7 +3020,8 @@ ApiKeyAuth
 
 ```shell
 # You can also use wget
-curl -X PUT https://primaccess-179015.appspot.com//wallets/{wallet_id}/accounts/{account_id}
+curl -X PUT https://primaccess-179015.appspot.com//wallets/{wallet_id}/accounts/{account_id} \
+  -H 'Accept: application/json'
 
 
 ```
@@ -2507,10 +3032,18 @@ PUT https://primaccess-179015.appspot.com//wallets/{wallet_id}/accounts/{account
 Host: primaccess-179015.appspot.com
 
 
+Accept: application/json
+
+
 ```
 
 
 ```javascript
+var headers = {
+  'Accept':'application/json'
+
+
+};
 
 
 $.ajax({
@@ -2518,6 +3051,7 @@ $.ajax({
   method: 'put',
 
 
+  headers: headers,
   success: function(data) {
     console.log(JSON.stringify(data));
   }
@@ -2531,11 +3065,19 @@ $.ajax({
 const request = require('node-fetch');
 
 
+const headers = {
+  'Accept':'application/json'
+
+
+};
+
+
 fetch('https://primaccess-179015.appspot.com//wallets/{wallet_id}/accounts/{account_id}',
 {
-  method: 'PUT'
+  method: 'PUT',
 
 
+  headers: headers
 })
 .then(function(res) {
     return res.json();
@@ -2552,9 +3094,14 @@ require 'rest-client'
 require 'json'
 
 
+headers = {
+  'Accept' => 'application/json'
+}
+
+
 result = RestClient.put 'https://primaccess-179015.appspot.com//wallets/{wallet_id}/accounts/{account_id}',
   params: {
-  }
+  }, headers: headers
 
 
 p JSON.parse(result)
@@ -2565,12 +3112,15 @@ p JSON.parse(result)
 
 ```python
 import requests
+headers = {
+  'Accept': 'application/json'
+}
 
 
 r = requests.put('https://primaccess-179015.appspot.com//wallets/{wallet_id}/accounts/{account_id}', params={
 
 
-)
+}, headers = headers)
 
 
 print r.json()
@@ -2612,8 +3162,31 @@ Adds an account to a wallet.
 
 |Parameter|In|Type|Required|Description|
 |---|---|---|---|---|
-|wallet_id|path|string|true|Unique identifier for the wallet|
-|account_id|path|string|true|Unique identifier for the account|
+|wallet_id|path|string(uuid)|true|Unique identifier for the wallet|
+|account_id|path|string(uuid)|true|Unique identifier for the account|
+
+
+> Example responses
+
+
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
 
 
 <h3 id="addAccountToWallet-responses">Responses</h3>
@@ -2622,6 +3195,9 @@ Adds an account to a wallet.
 |Status|Meaning|Description|Schema|
 |---|---|---|---|
 |201|[Created](https://tools.ietf.org/html/rfc7231#section-6.3.2)|Created|None|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|The API key is missing or invalid.|[Error](#schemaerror)|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|The specified resource was not found.|[Error](#schemaerror)|
+|500|[Internal Server Error](https://tools.ietf.org/html/rfc7231#section-6.6.1)|The request raised an internal exception.|[Error](#schemaerror)|
 
 
 <aside class="warning">
@@ -2641,7 +3217,8 @@ ApiKeyAuth
 
 ```shell
 # You can also use wget
-curl -X DELETE https://primaccess-179015.appspot.com//wallets/{wallet_id}/accounts/{account_id}
+curl -X DELETE https://primaccess-179015.appspot.com//wallets/{wallet_id}/accounts/{account_id} \
+  -H 'Accept: application/json'
 
 
 ```
@@ -2652,10 +3229,18 @@ DELETE https://primaccess-179015.appspot.com//wallets/{wallet_id}/accounts/{acco
 Host: primaccess-179015.appspot.com
 
 
+Accept: application/json
+
+
 ```
 
 
 ```javascript
+var headers = {
+  'Accept':'application/json'
+
+
+};
 
 
 $.ajax({
@@ -2663,6 +3248,7 @@ $.ajax({
   method: 'delete',
 
 
+  headers: headers,
   success: function(data) {
     console.log(JSON.stringify(data));
   }
@@ -2676,11 +3262,19 @@ $.ajax({
 const request = require('node-fetch');
 
 
+const headers = {
+  'Accept':'application/json'
+
+
+};
+
+
 fetch('https://primaccess-179015.appspot.com//wallets/{wallet_id}/accounts/{account_id}',
 {
-  method: 'DELETE'
+  method: 'DELETE',
 
 
+  headers: headers
 })
 .then(function(res) {
     return res.json();
@@ -2697,9 +3291,14 @@ require 'rest-client'
 require 'json'
 
 
+headers = {
+  'Accept' => 'application/json'
+}
+
+
 result = RestClient.delete 'https://primaccess-179015.appspot.com//wallets/{wallet_id}/accounts/{account_id}',
   params: {
-  }
+  }, headers: headers
 
 
 p JSON.parse(result)
@@ -2710,12 +3309,15 @@ p JSON.parse(result)
 
 ```python
 import requests
+headers = {
+  'Accept': 'application/json'
+}
 
 
 r = requests.delete('https://primaccess-179015.appspot.com//wallets/{wallet_id}/accounts/{account_id}', params={
 
 
-)
+}, headers = headers)
 
 
 print r.json()
@@ -2757,8 +3359,31 @@ Removes an account from a wallet.
 
 |Parameter|In|Type|Required|Description|
 |---|---|---|---|---|
-|wallet_id|path|string|true|Unique identifier for the wallet|
-|account_id|path|string|true|Unique identifier for the account|
+|wallet_id|path|string(uuid)|true|Unique identifier for the wallet|
+|account_id|path|string(uuid)|true|Unique identifier for the account|
+
+
+> Example responses
+
+
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
 
 
 <h3 id="removeAccountFromWallet-responses">Responses</h3>
@@ -2767,6 +3392,209 @@ Removes an account from a wallet.
 |Status|Meaning|Description|Schema|
 |---|---|---|---|
 |204|[No Content](https://tools.ietf.org/html/rfc7231#section-6.3.5)|No Content|None|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|The API key is missing or invalid.|[Error](#schemaerror)|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|The specified resource was not found.|[Error](#schemaerror)|
+|500|[Internal Server Error](https://tools.ietf.org/html/rfc7231#section-6.6.1)|The request raised an internal exception.|[Error](#schemaerror)|
+
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+ApiKeyAuth
+</aside>
+
+
+## getTransactionsByWalletId
+
+
+<a id="opIdgetTransactionsByWalletId"></a>
+
+
+> Code samples
+
+
+```shell
+# You can also use wget
+curl -X GET https://primaccess-179015.appspot.com//wallets/{wallet_id}/transactions \
+  -H 'Accept: application/json'
+
+
+```
+
+
+```http
+GET https://primaccess-179015.appspot.com//wallets/{wallet_id}/transactions HTTP/1.1
+Host: primaccess-179015.appspot.com
+
+
+Accept: application/json
+
+
+```
+
+
+```javascript
+var headers = {
+  'Accept':'application/json'
+
+
+};
+
+
+$.ajax({
+  url: 'https://primaccess-179015.appspot.com//wallets/{wallet_id}/transactions',
+  method: 'get',
+
+
+  headers: headers,
+  success: function(data) {
+    console.log(JSON.stringify(data));
+  }
+})
+
+
+```
+
+
+```javascript--nodejs
+const request = require('node-fetch');
+
+
+const headers = {
+  'Accept':'application/json'
+
+
+};
+
+
+fetch('https://primaccess-179015.appspot.com//wallets/{wallet_id}/transactions',
+{
+  method: 'GET',
+
+
+  headers: headers
+})
+.then(function(res) {
+    return res.json();
+}).then(function(body) {
+    console.log(body);
+});
+
+
+```
+
+
+```ruby
+require 'rest-client'
+require 'json'
+
+
+headers = {
+  'Accept' => 'application/json'
+}
+
+
+result = RestClient.get 'https://primaccess-179015.appspot.com//wallets/{wallet_id}/transactions',
+  params: {
+  }, headers: headers
+
+
+p JSON.parse(result)
+
+
+```
+
+
+```python
+import requests
+headers = {
+  'Accept': 'application/json'
+}
+
+
+r = requests.get('https://primaccess-179015.appspot.com//wallets/{wallet_id}/transactions', params={
+
+
+}, headers = headers)
+
+
+print r.json()
+
+
+```
+
+
+```java
+URL obj = new URL("https://primaccess-179015.appspot.com//wallets/{wallet_id}/transactions");
+HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+con.setRequestMethod("GET");
+int responseCode = con.getResponseCode();
+BufferedReader in = new BufferedReader(
+    new InputStreamReader(con.getInputStream()));
+String inputLine;
+StringBuffer response = new StringBuffer();
+while ((inputLine = in.readLine()) != null) {
+    response.append(inputLine);
+}
+in.close();
+System.out.println(response.toString());
+
+
+```
+
+
+`GET /wallets/{wallet_id}/transactions`
+
+
+*Get all transactions*
+
+
+Gets all transactions of a wallet.
+
+
+<h3 id="getTransactionsByWalletId-parameters">Parameters</h3>
+
+
+|Parameter|In|Type|Required|Description|
+|---|---|---|---|---|
+|wallet_id|path|string(uuid)|true|Unique identifier for the wallet|
+|id|query|string(uuid)|false|transaction id|
+|reference|query|string|false|Account reference|
+|account_id|query|string(uuid)|false|Account unique identifier|
+|transaction_type_id|query|string(uuid)|false|Transaction type unique identifier|
+
+
+> Example responses
+
+
+```json
+{
+  "total": 100,
+  "offset": 0,
+  "limit": 20
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+
+
+<h3 id="getTransactionsByWalletId-responses">Responses</h3>
+
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|A list of transaction objects|Inline|
+|400|[Bad Request](https://tools.ietf.org/html/rfc7231#section-6.5.1)|The request parameters are invalid.|[Error](#schemaerror)|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|The API key is missing or invalid.|[Error](#schemaerror)|
 
 
 <aside class="warning">
@@ -2942,6 +3770,18 @@ Gets info about a card.
   "id": "040F1848D7581"
 }
 ```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
 
 
 <h3 id="getCard-responses">Responses</h3>
@@ -2950,6 +3790,8 @@ Gets info about a card.
 |Status|Meaning|Description|Schema|
 |---|---|---|---|
 |200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|A card object|[Card](#schemacard)|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|The API key is missing or invalid.|[Error](#schemaerror)|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|The specified resource was not found.|[Error](#schemaerror)|
 
 
 <aside class="warning">
@@ -2969,7 +3811,8 @@ ApiKeyAuth
 
 ```shell
 # You can also use wget
-curl -X GET https://primaccess-179015.appspot.com//cards/{card_id}/accounts
+curl -X GET https://primaccess-179015.appspot.com//cards/{card_id}/accounts \
+  -H 'Accept: application/json'
 
 
 ```
@@ -2980,10 +3823,18 @@ GET https://primaccess-179015.appspot.com//cards/{card_id}/accounts HTTP/1.1
 Host: primaccess-179015.appspot.com
 
 
+Accept: application/json
+
+
 ```
 
 
 ```javascript
+var headers = {
+  'Accept':'application/json'
+
+
+};
 
 
 $.ajax({
@@ -2991,6 +3842,7 @@ $.ajax({
   method: 'get',
 
 
+  headers: headers,
   success: function(data) {
     console.log(JSON.stringify(data));
   }
@@ -3004,11 +3856,19 @@ $.ajax({
 const request = require('node-fetch');
 
 
+const headers = {
+  'Accept':'application/json'
+
+
+};
+
+
 fetch('https://primaccess-179015.appspot.com//cards/{card_id}/accounts',
 {
-  method: 'GET'
+  method: 'GET',
 
 
+  headers: headers
 })
 .then(function(res) {
     return res.json();
@@ -3025,9 +3885,14 @@ require 'rest-client'
 require 'json'
 
 
+headers = {
+  'Accept' => 'application/json'
+}
+
+
 result = RestClient.get 'https://primaccess-179015.appspot.com//cards/{card_id}/accounts',
   params: {
-  }
+  }, headers: headers
 
 
 p JSON.parse(result)
@@ -3038,12 +3903,15 @@ p JSON.parse(result)
 
 ```python
 import requests
+headers = {
+  'Accept': 'application/json'
+}
 
 
 r = requests.get('https://primaccess-179015.appspot.com//cards/{card_id}/accounts', params={
 
 
-)
+}, headers = headers)
 
 
 print r.json()
@@ -3077,7 +3945,7 @@ System.out.println(response.toString());
 *Get all owners*
 
 
-Gets all owners for a card.
+Gets the current owner account of a card.
 
 
 <h3 id="getCardOwners-parameters">Parameters</h3>
@@ -3088,12 +3956,34 @@ Gets all owners for a card.
 |card_id|path|string|true|Unique identifier for the card|
 
 
+> Example responses
+
+
+```json
+null
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+
+
 <h3 id="getCardOwners-responses">Responses</h3>
 
 
 |Status|Meaning|Description|Schema|
 |---|---|---|---|
-|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|A list of card owner objects|None|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|A list of card owner objects|Inline|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|The API key is missing or invalid.|[Error](#schemaerror)|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|The specified resource was not found.|[Error](#schemaerror)|
 
 
 <aside class="warning">
@@ -3113,7 +4003,8 @@ ApiKeyAuth
 
 ```shell
 # You can also use wget
-curl -X PUT https://primaccess-179015.appspot.com//cards/{card_id}/accounts/{account_id}
+curl -X PUT https://primaccess-179015.appspot.com//cards/{card_id}/accounts/{account_id} \
+  -H 'Accept: application/json'
 
 
 ```
@@ -3124,10 +4015,18 @@ PUT https://primaccess-179015.appspot.com//cards/{card_id}/accounts/{account_id}
 Host: primaccess-179015.appspot.com
 
 
+Accept: application/json
+
+
 ```
 
 
 ```javascript
+var headers = {
+  'Accept':'application/json'
+
+
+};
 
 
 $.ajax({
@@ -3135,6 +4034,7 @@ $.ajax({
   method: 'put',
 
 
+  headers: headers,
   success: function(data) {
     console.log(JSON.stringify(data));
   }
@@ -3148,11 +4048,19 @@ $.ajax({
 const request = require('node-fetch');
 
 
+const headers = {
+  'Accept':'application/json'
+
+
+};
+
+
 fetch('https://primaccess-179015.appspot.com//cards/{card_id}/accounts/{account_id}',
 {
-  method: 'PUT'
+  method: 'PUT',
 
 
+  headers: headers
 })
 .then(function(res) {
     return res.json();
@@ -3169,9 +4077,14 @@ require 'rest-client'
 require 'json'
 
 
+headers = {
+  'Accept' => 'application/json'
+}
+
+
 result = RestClient.put 'https://primaccess-179015.appspot.com//cards/{card_id}/accounts/{account_id}',
   params: {
-  }
+  }, headers: headers
 
 
 p JSON.parse(result)
@@ -3182,12 +4095,15 @@ p JSON.parse(result)
 
 ```python
 import requests
+headers = {
+  'Accept': 'application/json'
+}
 
 
 r = requests.put('https://primaccess-179015.appspot.com//cards/{card_id}/accounts/{account_id}', params={
 
 
-)
+}, headers = headers)
 
 
 print r.json()
@@ -3230,7 +4146,30 @@ Assigns card to an account.
 |Parameter|In|Type|Required|Description|
 |---|---|---|---|---|
 |card_id|path|string|true|Unique identifier for the card|
-|account_id|path|string|true|Unique identifier for the account|
+|account_id|path|string(uuid)|true|Unique identifier for the account|
+
+
+> Example responses
+
+
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
 
 
 <h3 id="assignCard-responses">Responses</h3>
@@ -3239,6 +4178,9 @@ Assigns card to an account.
 |Status|Meaning|Description|Schema|
 |---|---|---|---|
 |201|[Created](https://tools.ietf.org/html/rfc7231#section-6.3.2)|Created|None|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|The API key is missing or invalid.|[Error](#schemaerror)|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|The specified resource was not found.|[Error](#schemaerror)|
+|500|[Internal Server Error](https://tools.ietf.org/html/rfc7231#section-6.6.1)|The request raised an internal exception.|[Error](#schemaerror)|
 
 
 <aside class="warning">
@@ -3258,7 +4200,8 @@ ApiKeyAuth
 
 ```shell
 # You can also use wget
-curl -X DELETE https://primaccess-179015.appspot.com//cards/{card_id}/accounts/{account_id}
+curl -X DELETE https://primaccess-179015.appspot.com//cards/{card_id}/accounts/{account_id} \
+  -H 'Accept: application/json'
 
 
 ```
@@ -3269,10 +4212,18 @@ DELETE https://primaccess-179015.appspot.com//cards/{card_id}/accounts/{account_
 Host: primaccess-179015.appspot.com
 
 
+Accept: application/json
+
+
 ```
 
 
 ```javascript
+var headers = {
+  'Accept':'application/json'
+
+
+};
 
 
 $.ajax({
@@ -3280,6 +4231,7 @@ $.ajax({
   method: 'delete',
 
 
+  headers: headers,
   success: function(data) {
     console.log(JSON.stringify(data));
   }
@@ -3293,11 +4245,19 @@ $.ajax({
 const request = require('node-fetch');
 
 
+const headers = {
+  'Accept':'application/json'
+
+
+};
+
+
 fetch('https://primaccess-179015.appspot.com//cards/{card_id}/accounts/{account_id}',
 {
-  method: 'DELETE'
+  method: 'DELETE',
 
 
+  headers: headers
 })
 .then(function(res) {
     return res.json();
@@ -3314,9 +4274,14 @@ require 'rest-client'
 require 'json'
 
 
+headers = {
+  'Accept' => 'application/json'
+}
+
+
 result = RestClient.delete 'https://primaccess-179015.appspot.com//cards/{card_id}/accounts/{account_id}',
   params: {
-  }
+  }, headers: headers
 
 
 p JSON.parse(result)
@@ -3327,12 +4292,15 @@ p JSON.parse(result)
 
 ```python
 import requests
+headers = {
+  'Accept': 'application/json'
+}
 
 
 r = requests.delete('https://primaccess-179015.appspot.com//cards/{card_id}/accounts/{account_id}', params={
 
 
-)
+}, headers = headers)
 
 
 print r.json()
@@ -3375,7 +4343,30 @@ Unassigns card from an account.
 |Parameter|In|Type|Required|Description|
 |---|---|---|---|---|
 |card_id|path|string|true|Unique identifier for the card|
-|account_id|path|string|true|Unique identifier for the account|
+|account_id|path|string(uuid)|true|Unique identifier for the account|
+
+
+> Example responses
+
+
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
 
 
 <h3 id="unassignCard-responses">Responses</h3>
@@ -3384,6 +4375,9 @@ Unassigns card from an account.
 |Status|Meaning|Description|Schema|
 |---|---|---|---|
 |204|[No Content](https://tools.ietf.org/html/rfc7231#section-6.3.5)|No content|None|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|The API key is missing or invalid.|[Error](#schemaerror)|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|The specified resource was not found.|[Error](#schemaerror)|
+|500|[Internal Server Error](https://tools.ietf.org/html/rfc7231#section-6.6.1)|The request raised an internal exception.|[Error](#schemaerror)|
 
 
 <aside class="warning">
@@ -3393,142 +4387,6 @@ ApiKeyAuth
 
 
 <h1 id="Primaccess-API-Groups">Groups</h1>
-
-
-## getGroups
-
-
-<a id="opIdgetGroups"></a>
-
-
-> Code samples
-
-
-```shell
-# You can also use wget
-curl -X GET https://primaccess-179015.appspot.com//groups/
-
-
-```
-
-
-```http
-GET https://primaccess-179015.appspot.com//groups/ HTTP/1.1
-Host: primaccess-179015.appspot.com
-
-
-```
-
-
-```javascript
-
-
-$.ajax({
-  url: 'https://primaccess-179015.appspot.com//groups/',
-  method: 'get',
-
-
-  success: function(data) {
-    console.log(JSON.stringify(data));
-  }
-})
-
-
-```
-
-
-```javascript--nodejs
-const request = require('node-fetch');
-
-
-fetch('https://primaccess-179015.appspot.com//groups/',
-{
-  method: 'GET'
-
-
-})
-.then(function(res) {
-    return res.json();
-}).then(function(body) {
-    console.log(body);
-});
-
-
-```
-
-
-```ruby
-require 'rest-client'
-require 'json'
-
-
-result = RestClient.get 'https://primaccess-179015.appspot.com//groups/',
-  params: {
-  }
-
-
-p JSON.parse(result)
-
-
-```
-
-
-```python
-import requests
-
-
-r = requests.get('https://primaccess-179015.appspot.com//groups/', params={
-
-
-)
-
-
-print r.json()
-
-
-```
-
-
-```java
-URL obj = new URL("https://primaccess-179015.appspot.com//groups/");
-HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-con.setRequestMethod("GET");
-int responseCode = con.getResponseCode();
-BufferedReader in = new BufferedReader(
-    new InputStreamReader(con.getInputStream()));
-String inputLine;
-StringBuffer response = new StringBuffer();
-while ((inputLine = in.readLine()) != null) {
-    response.append(inputLine);
-}
-in.close();
-System.out.println(response.toString());
-
-
-```
-
-
-`GET /groups/`
-
-
-*Get all groups*
-
-
-Gets all groups for the current golf.
-
-
-<h3 id="getGroups-responses">Responses</h3>
-
-
-|Status|Meaning|Description|Schema|
-|---|---|---|---|
-|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|A list of group objects|None|
-
-
-<aside class="warning">
-To perform this operation, you must be authenticated by means of one of the following methods:
-ApiKeyAuth
-</aside>
 
 
 ## createGroup
@@ -3542,7 +4400,8 @@ ApiKeyAuth
 
 ```shell
 # You can also use wget
-curl -X POST https://primaccess-179015.appspot.com//groups/ \
+curl -X POST https://primaccess-179015.appspot.com//groups \
+  -H 'Content-Type: application/json' \
   -H 'Accept: application/json'
 
 
@@ -3550,10 +4409,9 @@ curl -X POST https://primaccess-179015.appspot.com//groups/ \
 
 
 ```http
-POST https://primaccess-179015.appspot.com//groups/ HTTP/1.1
+POST https://primaccess-179015.appspot.com//groups HTTP/1.1
 Host: primaccess-179015.appspot.com
-
-
+Content-Type: application/json
 Accept: application/json
 
 
@@ -3562,6 +4420,7 @@ Accept: application/json
 
 ```javascript
 var headers = {
+  'Content-Type':'application/json',
   'Accept':'application/json'
 
 
@@ -3569,7 +4428,7 @@ var headers = {
 
 
 $.ajax({
-  url: 'https://primaccess-179015.appspot.com//groups/',
+  url: 'https://primaccess-179015.appspot.com//groups',
   method: 'post',
 
 
@@ -3585,20 +4444,21 @@ $.ajax({
 
 ```javascript--nodejs
 const request = require('node-fetch');
-
-
+const inputBody = '{
+  "name": "Professionals"
+}';
 const headers = {
+  'Content-Type':'application/json',
   'Accept':'application/json'
 
 
 };
 
 
-fetch('https://primaccess-179015.appspot.com//groups/',
+fetch('https://primaccess-179015.appspot.com//groups',
 {
   method: 'POST',
-
-
+  body: inputBody,
   headers: headers
 })
 .then(function(res) {
@@ -3617,11 +4477,12 @@ require 'json'
 
 
 headers = {
+  'Content-Type' => 'application/json',
   'Accept' => 'application/json'
 }
 
 
-result = RestClient.post 'https://primaccess-179015.appspot.com//groups/',
+result = RestClient.post 'https://primaccess-179015.appspot.com//groups',
   params: {
   }, headers: headers
 
@@ -3635,11 +4496,12 @@ p JSON.parse(result)
 ```python
 import requests
 headers = {
+  'Content-Type': 'application/json',
   'Accept': 'application/json'
 }
 
 
-r = requests.post('https://primaccess-179015.appspot.com//groups/', params={
+r = requests.post('https://primaccess-179015.appspot.com//groups', params={
 
 
 }, headers = headers)
@@ -3652,7 +4514,7 @@ print r.json()
 
 
 ```java
-URL obj = new URL("https://primaccess-179015.appspot.com//groups/");
+URL obj = new URL("https://primaccess-179015.appspot.com//groups");
 HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 con.setRequestMethod("POST");
 int responseCode = con.getResponseCode();
@@ -3670,13 +4532,31 @@ System.out.println(response.toString());
 ```
 
 
-`POST /groups/`
+`POST /groups`
 
 
 *Create group*
 
 
 Creates a new group.
+
+
+> Body parameter
+
+
+```json
+{
+  "name": "Professionals"
+}
+```
+
+
+<h3 id="createGroup-parameters">Parameters</h3>
+
+
+|Parameter|In|Type|Required|Description|
+|---|---|---|---|---|
+|body|body|[Group](#schemagroup)|true|A partial group object|
 
 
 > Example responses
@@ -3686,63 +4566,32 @@ Creates a new group.
 {
   "id": "902357bd-c9ec-11e7-ad91-00155d011408",
   "name": "Professionals",
-  "access": [
-    {
-      "endpoint": {
-        "name": "Practice",
-        "fee": 2.5,
-        "version": "1.0.1",
-        "last_boot_at": "2017-02-12T15:19:21-02:00",
-        "last_ntf_at": "2017-02-12T15:19:21-02:00"
-      },
-      "daily_access": {
-        "monday": [
-          {
-            "from": "11:30",
-            "to": "14:00"
-          }
-        ],
-        "tuesday": [
-          {
-            "from": "11:30",
-            "to": "14:00"
-          }
-        ],
-        "wednesday": [
-          {
-            "from": "11:30",
-            "to": "14:00"
-          }
-        ],
-        "thursday": [
-          {
-            "from": "11:30",
-            "to": "14:00"
-          }
-        ],
-        "friday": [
-          {
-            "from": "11:30",
-            "to": "14:00"
-          }
-        ],
-        "saturday": [
-          {
-            "from": "11:30",
-            "to": "14:00"
-          }
-        ],
-        "sunday": [
-          {
-            "from": "11:30",
-            "to": "14:00"
-          }
-        ]
-      }
-    }
-  ],
   "created_at": "2017-02-12T15:19:21+01:00",
   "updated_at": "2017-02-12T15:19:21-02:00"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
 }
 ```
 
@@ -3753,6 +4602,10 @@ Creates a new group.
 |Status|Meaning|Description|Schema|
 |---|---|---|---|
 |201|[Created](https://tools.ietf.org/html/rfc7231#section-6.3.2)|A group object|Inline|
+|400|[Bad Request](https://tools.ietf.org/html/rfc7231#section-6.5.1)|The request parameters are invalid.|[Error](#schemaerror)|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|The API key is missing or invalid.|[Error](#schemaerror)|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|The specified resource was not found.|[Error](#schemaerror)|
+|500|[Internal Server Error](https://tools.ietf.org/html/rfc7231#section-6.6.1)|The request raised an internal exception.|[Error](#schemaerror)|
 
 
 <aside class="warning">
@@ -3761,10 +4614,10 @@ ApiKeyAuth
 </aside>
 
 
-## updateGroup
+## getGroup
 
 
-<a id="opIdupdateGroup"></a>
+<a id="opIdgetGroup"></a>
 
 
 > Code samples
@@ -3772,7 +4625,7 @@ ApiKeyAuth
 
 ```shell
 # You can also use wget
-curl -X PUT https://primaccess-179015.appspot.com//groups/{group_id} \
+curl -X GET https://primaccess-179015.appspot.com//groups/{group_id} \
   -H 'Accept: application/json'
 
 
@@ -3780,7 +4633,7 @@ curl -X PUT https://primaccess-179015.appspot.com//groups/{group_id} \
 
 
 ```http
-PUT https://primaccess-179015.appspot.com//groups/{group_id} HTTP/1.1
+GET https://primaccess-179015.appspot.com//groups/{group_id} HTTP/1.1
 Host: primaccess-179015.appspot.com
 
 
@@ -3800,7 +4653,7 @@ var headers = {
 
 $.ajax({
   url: 'https://primaccess-179015.appspot.com//groups/{group_id}',
-  method: 'put',
+  method: 'get',
 
 
   headers: headers,
@@ -3826,7 +4679,7 @@ const headers = {
 
 fetch('https://primaccess-179015.appspot.com//groups/{group_id}',
 {
-  method: 'PUT',
+  method: 'GET',
 
 
   headers: headers
@@ -3851,6 +4704,206 @@ headers = {
 }
 
 
+result = RestClient.get 'https://primaccess-179015.appspot.com//groups/{group_id}',
+  params: {
+  }, headers: headers
+
+
+p JSON.parse(result)
+
+
+```
+
+
+```python
+import requests
+headers = {
+  'Accept': 'application/json'
+}
+
+
+r = requests.get('https://primaccess-179015.appspot.com//groups/{group_id}', params={
+
+
+}, headers = headers)
+
+
+print r.json()
+
+
+```
+
+
+```java
+URL obj = new URL("https://primaccess-179015.appspot.com//groups/{group_id}");
+HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+con.setRequestMethod("GET");
+int responseCode = con.getResponseCode();
+BufferedReader in = new BufferedReader(
+    new InputStreamReader(con.getInputStream()));
+String inputLine;
+StringBuffer response = new StringBuffer();
+while ((inputLine = in.readLine()) != null) {
+    response.append(inputLine);
+}
+in.close();
+System.out.println(response.toString());
+
+
+```
+
+
+`GET /groups/{group_id}`
+
+
+*Get group*
+
+
+Get a group for the current golf.
+
+
+<h3 id="getGroup-parameters">Parameters</h3>
+
+
+|Parameter|In|Type|Required|Description|
+|---|---|---|---|---|
+|group_id|path|string(uuid)|true|Unique identifier for the group|
+
+
+> Example responses
+
+
+```json
+{
+  "id": "902357bd-c9ec-11e7-ad91-00155d011408",
+  "name": "Professionals",
+  "created_at": "2017-02-12T15:19:21+01:00",
+  "updated_at": "2017-02-12T15:19:21-02:00"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+
+
+<h3 id="getGroup-responses">Responses</h3>
+
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|A group objects|Inline|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|The API key is missing or invalid.|[Error](#schemaerror)|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|The specified resource was not found.|[Error](#schemaerror)|
+
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+ApiKeyAuth
+</aside>
+
+
+## updateGroup
+
+
+<a id="opIdupdateGroup"></a>
+
+
+> Code samples
+
+
+```shell
+# You can also use wget
+curl -X PUT https://primaccess-179015.appspot.com//groups/{group_id} \
+  -H 'Content-Type: application/json' \
+  -H 'Accept: application/json'
+
+
+```
+
+
+```http
+PUT https://primaccess-179015.appspot.com//groups/{group_id} HTTP/1.1
+Host: primaccess-179015.appspot.com
+Content-Type: application/json
+Accept: application/json
+
+
+```
+
+
+```javascript
+var headers = {
+  'Content-Type':'application/json',
+  'Accept':'application/json'
+
+
+};
+
+
+$.ajax({
+  url: 'https://primaccess-179015.appspot.com//groups/{group_id}',
+  method: 'put',
+
+
+  headers: headers,
+  success: function(data) {
+    console.log(JSON.stringify(data));
+  }
+})
+
+
+```
+
+
+```javascript--nodejs
+const request = require('node-fetch');
+const inputBody = '{
+  "name": "Professionals"
+}';
+const headers = {
+  'Content-Type':'application/json',
+  'Accept':'application/json'
+
+
+};
+
+
+fetch('https://primaccess-179015.appspot.com//groups/{group_id}',
+{
+  method: 'PUT',
+  body: inputBody,
+  headers: headers
+})
+.then(function(res) {
+    return res.json();
+}).then(function(body) {
+    console.log(body);
+});
+
+
+```
+
+
+```ruby
+require 'rest-client'
+require 'json'
+
+
+headers = {
+  'Content-Type' => 'application/json',
+  'Accept' => 'application/json'
+}
+
+
 result = RestClient.put 'https://primaccess-179015.appspot.com//groups/{group_id}',
   params: {
   }, headers: headers
@@ -3865,6 +4918,7 @@ p JSON.parse(result)
 ```python
 import requests
 headers = {
+  'Content-Type': 'application/json',
   'Accept': 'application/json'
 }
 
@@ -3909,12 +4963,23 @@ System.out.println(response.toString());
 Updates an existing group.
 
 
+> Body parameter
+
+
+```json
+{
+  "name": "Professionals"
+}
+```
+
+
 <h3 id="updateGroup-parameters">Parameters</h3>
 
 
 |Parameter|In|Type|Required|Description|
 |---|---|---|---|---|
-|group_id|path|string|true|Unique identifier for the group|
+|group_id|path|string(uuid)|true|Unique identifier for the group|
+|body|body|[Group](#schemagroup)|true|A partial group object|
 
 
 > Example responses
@@ -3924,63 +4989,32 @@ Updates an existing group.
 {
   "id": "902357bd-c9ec-11e7-ad91-00155d011408",
   "name": "Professionals",
-  "access": [
-    {
-      "endpoint": {
-        "name": "Practice",
-        "fee": 2.5,
-        "version": "1.0.1",
-        "last_boot_at": "2017-02-12T15:19:21-02:00",
-        "last_ntf_at": "2017-02-12T15:19:21-02:00"
-      },
-      "daily_access": {
-        "monday": [
-          {
-            "from": "11:30",
-            "to": "14:00"
-          }
-        ],
-        "tuesday": [
-          {
-            "from": "11:30",
-            "to": "14:00"
-          }
-        ],
-        "wednesday": [
-          {
-            "from": "11:30",
-            "to": "14:00"
-          }
-        ],
-        "thursday": [
-          {
-            "from": "11:30",
-            "to": "14:00"
-          }
-        ],
-        "friday": [
-          {
-            "from": "11:30",
-            "to": "14:00"
-          }
-        ],
-        "saturday": [
-          {
-            "from": "11:30",
-            "to": "14:00"
-          }
-        ],
-        "sunday": [
-          {
-            "from": "11:30",
-            "to": "14:00"
-          }
-        ]
-      }
-    }
-  ],
   "created_at": "2017-02-12T15:19:21+01:00",
   "updated_at": "2017-02-12T15:19:21-02:00"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
 }
 ```
 
@@ -3991,6 +5025,10 @@ Updates an existing group.
 |Status|Meaning|Description|Schema|
 |---|---|---|---|
 |200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|A group object|Inline|
+|400|[Bad Request](https://tools.ietf.org/html/rfc7231#section-6.5.1)|The request parameters are invalid.|[Error](#schemaerror)|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|The API key is missing or invalid.|[Error](#schemaerror)|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|The specified resource was not found.|[Error](#schemaerror)|
+|500|[Internal Server Error](https://tools.ietf.org/html/rfc7231#section-6.6.1)|The request raised an internal exception.|[Error](#schemaerror)|
 
 
 <aside class="warning">
@@ -4010,7 +5048,8 @@ ApiKeyAuth
 
 ```shell
 # You can also use wget
-curl -X DELETE https://primaccess-179015.appspot.com//groups/{group_id}
+curl -X DELETE https://primaccess-179015.appspot.com//groups/{group_id} \
+  -H 'Accept: application/json'
 
 
 ```
@@ -4021,10 +5060,18 @@ DELETE https://primaccess-179015.appspot.com//groups/{group_id} HTTP/1.1
 Host: primaccess-179015.appspot.com
 
 
+Accept: application/json
+
+
 ```
 
 
 ```javascript
+var headers = {
+  'Accept':'application/json'
+
+
+};
 
 
 $.ajax({
@@ -4032,6 +5079,7 @@ $.ajax({
   method: 'delete',
 
 
+  headers: headers,
   success: function(data) {
     console.log(JSON.stringify(data));
   }
@@ -4045,11 +5093,19 @@ $.ajax({
 const request = require('node-fetch');
 
 
+const headers = {
+  'Accept':'application/json'
+
+
+};
+
+
 fetch('https://primaccess-179015.appspot.com//groups/{group_id}',
 {
-  method: 'DELETE'
+  method: 'DELETE',
 
 
+  headers: headers
 })
 .then(function(res) {
     return res.json();
@@ -4066,9 +5122,14 @@ require 'rest-client'
 require 'json'
 
 
+headers = {
+  'Accept' => 'application/json'
+}
+
+
 result = RestClient.delete 'https://primaccess-179015.appspot.com//groups/{group_id}',
   params: {
-  }
+  }, headers: headers
 
 
 p JSON.parse(result)
@@ -4079,12 +5140,15 @@ p JSON.parse(result)
 
 ```python
 import requests
+headers = {
+  'Accept': 'application/json'
+}
 
 
 r = requests.delete('https://primaccess-179015.appspot.com//groups/{group_id}', params={
 
 
-)
+}, headers = headers)
 
 
 print r.json()
@@ -4119,6 +5183,8 @@ System.out.println(response.toString());
 
 
 Removes an existing group.
+There should be no accounts attached to the group
+If there is an account attached to the group, an exception is raised
 
 
 <h3 id="removeGroup-parameters">Parameters</h3>
@@ -4129,12 +5195,248 @@ Removes an existing group.
 |group_id|path|string|true|Unique identifier for the group|
 
 
+> Example responses
+
+
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+
+
 <h3 id="removeGroup-responses">Responses</h3>
 
 
 |Status|Meaning|Description|Schema|
 |---|---|---|---|
 |204|[No Content](https://tools.ietf.org/html/rfc7231#section-6.3.5)|No Content|None|
+|400|[Bad Request](https://tools.ietf.org/html/rfc7231#section-6.5.1)|The request parameters are invalid.|[Error](#schemaerror)|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|The API key is missing or invalid.|[Error](#schemaerror)|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|The specified resource was not found.|[Error](#schemaerror)|
+|500|[Internal Server Error](https://tools.ietf.org/html/rfc7231#section-6.6.1)|The request raised an internal exception.|[Error](#schemaerror)|
+
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+ApiKeyAuth
+</aside>
+
+
+## getAccountsByGroupId
+
+
+<a id="opIdgetAccountsByGroupId"></a>
+
+
+> Code samples
+
+
+```shell
+# You can also use wget
+curl -X GET https://primaccess-179015.appspot.com//groups/{group_id}/accounts \
+  -H 'Accept: application/json'
+
+
+```
+
+
+```http
+GET https://primaccess-179015.appspot.com//groups/{group_id}/accounts HTTP/1.1
+Host: primaccess-179015.appspot.com
+
+
+Accept: application/json
+
+
+```
+
+
+```javascript
+var headers = {
+  'Accept':'application/json'
+
+
+};
+
+
+$.ajax({
+  url: 'https://primaccess-179015.appspot.com//groups/{group_id}/accounts',
+  method: 'get',
+
+
+  headers: headers,
+  success: function(data) {
+    console.log(JSON.stringify(data));
+  }
+})
+
+
+```
+
+
+```javascript--nodejs
+const request = require('node-fetch');
+
+
+const headers = {
+  'Accept':'application/json'
+
+
+};
+
+
+fetch('https://primaccess-179015.appspot.com//groups/{group_id}/accounts',
+{
+  method: 'GET',
+
+
+  headers: headers
+})
+.then(function(res) {
+    return res.json();
+}).then(function(body) {
+    console.log(body);
+});
+
+
+```
+
+
+```ruby
+require 'rest-client'
+require 'json'
+
+
+headers = {
+  'Accept' => 'application/json'
+}
+
+
+result = RestClient.get 'https://primaccess-179015.appspot.com//groups/{group_id}/accounts',
+  params: {
+  }, headers: headers
+
+
+p JSON.parse(result)
+
+
+```
+
+
+```python
+import requests
+headers = {
+  'Accept': 'application/json'
+}
+
+
+r = requests.get('https://primaccess-179015.appspot.com//groups/{group_id}/accounts', params={
+
+
+}, headers = headers)
+
+
+print r.json()
+
+
+```
+
+
+```java
+URL obj = new URL("https://primaccess-179015.appspot.com//groups/{group_id}/accounts");
+HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+con.setRequestMethod("GET");
+int responseCode = con.getResponseCode();
+BufferedReader in = new BufferedReader(
+    new InputStreamReader(con.getInputStream()));
+String inputLine;
+StringBuffer response = new StringBuffer();
+while ((inputLine = in.readLine()) != null) {
+    response.append(inputLine);
+}
+in.close();
+System.out.println(response.toString());
+
+
+```
+
+
+`GET /groups/{group_id}/accounts`
+
+
+*Get accounts for an existing group*
+
+
+List all accounts within the group
+
+
+<h3 id="getAccountsByGroupId-parameters">Parameters</h3>
+
+
+|Parameter|In|Type|Required|Description|
+|---|---|---|---|---|
+|group_id|path|string(uuid)|true|No description|
+
+
+> Example responses
+
+
+```json
+{
+  "total": 100,
+  "offset": 0,
+  "limit": 20
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+
+
+<h3 id="getAccountsByGroupId-responses">Responses</h3>
+
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|201|[Created](https://tools.ietf.org/html/rfc7231#section-6.3.2)|A list of account objects|Inline|
+|400|[Bad Request](https://tools.ietf.org/html/rfc7231#section-6.5.1)|The request parameters are invalid.|[Error](#schemaerror)|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|The API key is missing or invalid.|[Error](#schemaerror)|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|The specified resource was not found.|[Error](#schemaerror)|
 
 
 <aside class="warning">
@@ -4154,7 +5456,8 @@ ApiKeyAuth
 
 ```shell
 # You can also use wget
-curl -X PUT https://primaccess-179015.appspot.com//groups/{group_id}/accounts/{account_id}
+curl -X PUT https://primaccess-179015.appspot.com//groups/{group_id}/accounts/{account_id} \
+  -H 'Accept: application/json'
 
 
 ```
@@ -4165,10 +5468,18 @@ PUT https://primaccess-179015.appspot.com//groups/{group_id}/accounts/{account_i
 Host: primaccess-179015.appspot.com
 
 
+Accept: application/json
+
+
 ```
 
 
 ```javascript
+var headers = {
+  'Accept':'application/json'
+
+
+};
 
 
 $.ajax({
@@ -4176,6 +5487,7 @@ $.ajax({
   method: 'put',
 
 
+  headers: headers,
   success: function(data) {
     console.log(JSON.stringify(data));
   }
@@ -4189,11 +5501,19 @@ $.ajax({
 const request = require('node-fetch');
 
 
+const headers = {
+  'Accept':'application/json'
+
+
+};
+
+
 fetch('https://primaccess-179015.appspot.com//groups/{group_id}/accounts/{account_id}',
 {
-  method: 'PUT'
+  method: 'PUT',
 
 
+  headers: headers
 })
 .then(function(res) {
     return res.json();
@@ -4210,9 +5530,14 @@ require 'rest-client'
 require 'json'
 
 
+headers = {
+  'Accept' => 'application/json'
+}
+
+
 result = RestClient.put 'https://primaccess-179015.appspot.com//groups/{group_id}/accounts/{account_id}',
   params: {
-  }
+  }, headers: headers
 
 
 p JSON.parse(result)
@@ -4223,12 +5548,15 @@ p JSON.parse(result)
 
 ```python
 import requests
+headers = {
+  'Accept': 'application/json'
+}
 
 
 r = requests.put('https://primaccess-179015.appspot.com//groups/{group_id}/accounts/{account_id}', params={
 
 
-)
+}, headers = headers)
 
 
 print r.json()
@@ -4274,12 +5602,38 @@ Adds an account to a group.
 |account_id|path|string|true|Unique identifier for the account|
 
 
+> Example responses
+
+
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+
+
 <h3 id="addAccountToGroup-responses">Responses</h3>
 
 
 |Status|Meaning|Description|Schema|
 |---|---|---|---|
-|201|[Created](https://tools.ietf.org/html/rfc7231#section-6.3.2)|Created|None|
+|201|[Created](https://tools.ietf.org/html/rfc7231#section-6.3.2)|No content|None|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|The API key is missing or invalid.|[Error](#schemaerror)|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|The specified resource was not found.|[Error](#schemaerror)|
+|500|[Internal Server Error](https://tools.ietf.org/html/rfc7231#section-6.6.1)|The request raised an internal exception.|[Error](#schemaerror)|
 
 
 <aside class="warning">
@@ -4299,7 +5653,8 @@ ApiKeyAuth
 
 ```shell
 # You can also use wget
-curl -X DELETE https://primaccess-179015.appspot.com//groups/{group_id}/accounts/{account_id}
+curl -X DELETE https://primaccess-179015.appspot.com//groups/{group_id}/accounts/{account_id} \
+  -H 'Accept: application/json'
 
 
 ```
@@ -4310,10 +5665,18 @@ DELETE https://primaccess-179015.appspot.com//groups/{group_id}/accounts/{accoun
 Host: primaccess-179015.appspot.com
 
 
+Accept: application/json
+
+
 ```
 
 
 ```javascript
+var headers = {
+  'Accept':'application/json'
+
+
+};
 
 
 $.ajax({
@@ -4321,6 +5684,7 @@ $.ajax({
   method: 'delete',
 
 
+  headers: headers,
   success: function(data) {
     console.log(JSON.stringify(data));
   }
@@ -4334,11 +5698,19 @@ $.ajax({
 const request = require('node-fetch');
 
 
+const headers = {
+  'Accept':'application/json'
+
+
+};
+
+
 fetch('https://primaccess-179015.appspot.com//groups/{group_id}/accounts/{account_id}',
 {
-  method: 'DELETE'
+  method: 'DELETE',
 
 
+  headers: headers
 })
 .then(function(res) {
     return res.json();
@@ -4355,9 +5727,14 @@ require 'rest-client'
 require 'json'
 
 
+headers = {
+  'Accept' => 'application/json'
+}
+
+
 result = RestClient.delete 'https://primaccess-179015.appspot.com//groups/{group_id}/accounts/{account_id}',
   params: {
-  }
+  }, headers: headers
 
 
 p JSON.parse(result)
@@ -4368,12 +5745,15 @@ p JSON.parse(result)
 
 ```python
 import requests
+headers = {
+  'Accept': 'application/json'
+}
 
 
 r = requests.delete('https://primaccess-179015.appspot.com//groups/{group_id}/accounts/{account_id}', params={
 
 
-)
+}, headers = headers)
 
 
 print r.json()
@@ -4419,12 +5799,38 @@ Removes an account from a group.
 |account_id|path|string|true|Unique identifier for the account|
 
 
+> Example responses
+
+
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+```json
+{
+  "code": "string",
+  "message": "string"
+}
+```
+
+
 <h3 id="removeAccountFromGroup-responses">Responses</h3>
 
 
 |Status|Meaning|Description|Schema|
 |---|---|---|---|
 |204|[No Content](https://tools.ietf.org/html/rfc7231#section-6.3.5)|No Content|None|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|The API key is missing or invalid.|[Error](#schemaerror)|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|The specified resource was not found.|[Error](#schemaerror)|
+|500|[Internal Server Error](https://tools.ietf.org/html/rfc7231#section-6.6.1)|The request raised an internal exception.|[Error](#schemaerror)|
 
 
 <aside class="warning">
@@ -4826,7 +6232,7 @@ System.out.println(response.toString());
 
 |Parameter|In|Type|Required|Description|
 |---|---|---|---|---|
-|transaction_type_id|path|string|true|No description|
+|transaction_type_id|path|string|true|Unique identifier for the transaction type|
 
 
 <h3 id="getTransactionTypeById-responses">Responses</h3>
@@ -4963,6 +6369,14 @@ System.out.println(response.toString());
 *Update a transaction type*
 
 
+<h3 id="updateTransactionType-parameters">Parameters</h3>
+
+
+|Parameter|In|Type|Required|Description|
+|---|---|---|---|---|
+|transaction_type_id|path|string|true|Unique identifier for the transaction type|
+
+
 <h3 id="updateTransactionType-responses">Responses</h3>
 
 
@@ -5094,6 +6508,14 @@ System.out.println(response.toString());
 
 
 *Delete a transaction type*
+
+
+<h3 id="deleteTransactionType-parameters">Parameters</h3>
+
+
+|Parameter|In|Type|Required|Description|
+|---|---|---|---|---|
+|transaction_type_id|path|string|true|Unique identifier for the transaction type|
 
 
 <h3 id="deleteTransactionType-responses">Responses</h3>
@@ -6354,7 +7776,9 @@ ApiKeyAuth
   "first_name": "John",
   "email": "john.doe@gmail.com",
   "phone": "0601020304",
-  "is_superuser": false
+  "is_superuser": false,
+  "group": "c8e3bdac-f7a3-11e7-bf64-42010a8401cd",
+  "golf": "cfaa9264-f7a3-11e7-bf64-42010a8401cd"
 }
 ```
 
@@ -6370,6 +7794,8 @@ ApiKeyAuth
 |email|string|false|No description|
 |phone|string|false|No description|
 |is_superuser|boolean|false|No description|
+|group|string|false|No description|
+|golf|string|false|No description|
 
 
 <h2 id="tocSwallet">Wallet</h2>
@@ -6424,62 +7850,7 @@ ApiKeyAuth
 
 ```json
 {
-  "name": "Professionals",
-  "access": [
-    {
-      "endpoint": {
-        "name": "Practice",
-        "fee": 2.5,
-        "version": "1.0.1",
-        "last_boot_at": "2017-02-12T15:19:21-02:00",
-        "last_ntf_at": "2017-02-12T15:19:21-02:00"
-      },
-      "daily_access": {
-        "monday": [
-          {
-            "from": "11:30",
-            "to": "14:00"
-          }
-        ],
-        "tuesday": [
-          {
-            "from": "11:30",
-            "to": "14:00"
-          }
-        ],
-        "wednesday": [
-          {
-            "from": "11:30",
-            "to": "14:00"
-          }
-        ],
-        "thursday": [
-          {
-            "from": "11:30",
-            "to": "14:00"
-          }
-        ],
-        "friday": [
-          {
-            "from": "11:30",
-            "to": "14:00"
-          }
-        ],
-        "saturday": [
-          {
-            "from": "11:30",
-            "to": "14:00"
-          }
-        ],
-        "sunday": [
-          {
-            "from": "11:30",
-            "to": "14:00"
-          }
-        ]
-      }
-    }
-  ]
+  "name": "Professionals"
 }
 ```
 
@@ -6490,24 +7861,6 @@ ApiKeyAuth
 |Name|Type|Required|Description|
 |---|---|---|---|
 |name|string|false|No description|
-|access|[allOf]|false|No description|
-
-
-*allOf*
-
-
-|Name|Type|Required|Description|
-|---|---|---|---|
-|» *anonymous*|object|false|No description|
-|»» endpoint|[Endpoint](#schemaendpoint)|false|No description|
-
-
-*and*
-
-
-|Name|Type|Required|Description|
-|---|---|---|---|
-|» *anonymous*|[WeekAccess](#schemaweekaccess)|false|No description|
 
 
 <h2 id="tocSendpoint">Endpoint</h2>
@@ -6547,9 +7900,12 @@ ApiKeyAuth
 
 ```json
 {
-  "wallet_id": "string",
+  "wallet_id": "82619acc-f7ab-11e7-bf64-42010a8401cd",
+  "account_id": "8584c773-f7ab-11e7-bf64-42010a8401cd",
+  "transaction_type_id": "8be3f419-f7ab-11e7-bf64-42010a8401cd",
+  "move_id": "91c4fb44-f7ab-11e7-bf64-42010a8401cd",
+  "golf": "99573422-f7ab-11e7-bf64-42010a8401cd",
   "reference": "string",
-  "name": "string",
   "amount": 0
 }
 ```
@@ -6560,9 +7916,12 @@ ApiKeyAuth
 
 |Name|Type|Required|Description|
 |---|---|---|---|
-|wallet_id|string|false|No description|
+|wallet_id|string(uuid)|false|No description|
+|account_id|string(uuid)|false|No description|
+|transaction_type_id|string(uuid)|false|No description|
+|move_id|string(uuid)|false|No description|
+|golf|string(uuid)|false|No description|
 |reference|string|false|No description|
-|name|string|false|No description|
 |amount|number|false|No description|
 
 
@@ -6574,9 +7933,11 @@ ApiKeyAuth
 
 ```json
 {
-  "endpoint_id": "string",
-  "card_owner_id": "string",
-  "fee": 0
+  "endpoint_id": "56efa6be-f7ac-11e7-bf64-42010a8401cd",
+  "fee": 0,
+  "account_id": "5c4f0741-f7ac-11e7-bf64-42010a8401cd",
+  "card_id": "175FE157BAE2BB",
+  "golf": "99573422-f7ab-11e7-bf64-42010a8401cd"
 }
 ```
 
@@ -6586,9 +7947,11 @@ ApiKeyAuth
 
 |Name|Type|Required|Description|
 |---|---|---|---|
-|endpoint_id|string|false|Endpoint uuid|
-|card_owner_id|string|false|CardOwner uuid|
+|endpoint_id|string(uuid)|false|Endpoint uuid|
 |fee|number|false|Move swipe fee|
+|account_id|string(uuid)|false|Account uuid|
+|card_id|string|false|Card id|
+|golf|string(uuid)|false|No description|
 
 
 <h2 id="tocScardowner">CardOwner</h2>
@@ -6605,7 +7968,9 @@ ApiKeyAuth
     "first_name": "John",
     "email": "john.doe@gmail.com",
     "phone": "0601020304",
-    "is_superuser": false
+    "is_superuser": false,
+    "group": "c8e3bdac-f7a3-11e7-bf64-42010a8401cd",
+    "golf": "cfaa9264-f7a3-11e7-bf64-42010a8401cd"
   },
   "assign_on": "2017-02-12T15:19:21+01:00"
 }
@@ -6619,6 +7984,29 @@ ApiKeyAuth
 |---|---|---|---|
 |account|[Account](#schemaaccount)|false|No description|
 |assign_on|string|false|No description|
+
+
+<h2 id="tocScardvalidity">CardValidity</h2>
+
+
+<a id="schemacardvalidity"></a>
+
+
+```json
+{
+  "start_at": "2017-02-12T15:19:21-02:00",
+  "end_at": "2017-02-12T15:19:21-02:00"
+}
+```
+
+
+### Properties
+
+
+|Name|Type|Required|Description|
+|---|---|---|---|
+|start_at|string(datetime)|false|No description|
+|end_at|string(datetime)|false|No description|
 
 
 <h2 id="tocSweekaccess">WeekAccess</h2>
