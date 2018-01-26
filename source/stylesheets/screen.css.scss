@@ -102,6 +102,7 @@ html, body {
   }
 
   .logo {
+    padding: $nav-padding + $nav-indent;
     margin-bottom: $logo-margin;
   }
 
